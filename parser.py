@@ -2,6 +2,26 @@ import docx
 import lxml.etree as ET
 
 
+def add_header_to_xml(tree, section_name, module_code):
+  # Создаем элемент заголовка
+  header = ET.Element("Header")
+
+  # Добавляем информацию о модуле
+  module_info = ET.SubElement(header, "ModuleInfo")
+  module_code_element = ET.SubElement(module_info, "ModuleCode")
+  module_code_element.text = module_code
+
+  # Находим или создаем раздел
+  section = tree.find(section_name)
+  if section is None:
+    section = ET.Element(section_name)
+    tree.getroot().append(section)
+
+  # Вставляем заголовок в начало раздела
+  section.insert(0, header)
+
+  return tree
+
 class Node:
     def __init__(self, id, tag, name, parent=None, value=None):
         self.id = id
