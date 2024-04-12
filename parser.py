@@ -16,7 +16,7 @@ def add_header_to_xml(tree, module_code):
 
     # Вставляем заголовок в начало копии дерева (section)
     tree_copy.insert(0, header)
-
+    
     return tree_copy
 
 
