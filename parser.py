@@ -3,8 +3,6 @@ import lxml.etree as ET
 import copy
 
 def extract_subtree_and_add_header(tree, section_name, dictionary):
-
-
   # Поиск элемента с заданным именем раздела
   section_element = tree.find(f".//*[@Name='{section_name}']")
   if not section_element:
