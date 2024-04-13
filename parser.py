@@ -2,6 +2,26 @@ import docx
 import lxml.etree as ET
 import copy
 
+def extract_subtree_and_add_header(tree, section_name, dictionary):
+
+
+  # Поиск элемента с заданным именем раздела
+  section_element = tree.find(f".//*[@Name='{section_name}']")
+  if not section_element:
+    return None  # Раздел не найден
+
+  # Выделение поддерева
+  subtree = copy.deepcopy(section_element)
+
+  # Получение кода модуля из словаря
+  module_code = dictionary.get(section_name) 
+  if not module_code:
+    return None  # Код модуля не найден
+
+  # Добавление заголовка к поддереву
+  subtree_with_header = add_header_to_xml(subtree, module_code)
+  return subtree_with_header
+
 def add_header_to_xml(tree, module_code):
     # Создаём копию дерева, чтобы не изменять исходное
     tree_copy = copy.deepcopy(tree) 
