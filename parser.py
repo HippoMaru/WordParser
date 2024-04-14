@@ -30,7 +30,7 @@ def parse_content_description_to_tree(doc):
             if s_name not in tocs:
                 return root
 
-            if s_name == styles['toc 1']:
+            if s_name in styles['toc 1']:
                 node = Node(first_level_id, 'sec', ' '.join(para.text.split()[:-1]), root)
                 root.children.append(node)
                 first_level_id += 1
@@ -45,7 +45,7 @@ def parse_content_description_to_tree(doc):
                 node = Node(id[-1], 'subsec', ' '.join(para.text.split()[:-1]), parent)
                 parent.children.append(node)
 
-        if para.style.name == styles['content_description']:
+        if para.style.name in styles['content_description']:
             in_content_description = True
 
 
@@ -68,7 +68,7 @@ def parse_content_description_to_etree(doc):
             if s_name not in tocs:
                 return root
 
-            if s_name == styles['toc 1']:
+            if s_name in styles['toc 1']:
                 node = ET.SubElement(root, 'sec')
                 name = ' '.join(para.text.split()[:-1])
                 if name[0].isdigit():
@@ -77,7 +77,7 @@ def parse_content_description_to_etree(doc):
 
                 last_first_level = node
 
-            if s_name == styles['toc 2']:
+            if s_name in styles['toc 2']:
                 node = ET.SubElement(last_first_level, 'subsec1')
                 name = ' '.join(para.text.split()[:-1])
                 if name[0].isdigit():
@@ -86,14 +86,14 @@ def parse_content_description_to_etree(doc):
 
                 last_second_level = node
 
-            if s_name == styles['toc 3']:
+            if s_name in styles['toc 3']:
                 node = ET.SubElement(last_second_level, 'subsec2')
                 name = ' '.join(para.text.split()[:-1])
                 if name[0].isdigit():
                     name = ' '.join(name.split()[1:])
                 node.set('name', name)
 
-        if para.style.name == styles['content_description']:
+        if para.style.name in styles['content_description']:
             in_content_description = True
     return root
 
@@ -138,48 +138,48 @@ def parse_em_all(doc):
                         doc_index = i
                         break
 
-                    if para.style.name == styles['nump 2']:
-                        node = ET.SubElement(prev, 'nump2')
+                    if para.style.name in styles['nump 2']:
+                        node = ET.SubElement(prev, 'levelledPara')
                         node.text = para.text
                         numpstart = node
                         continue
-                    elif para.style.name == styles['nump 3']:
-                        node = ET.SubElement(prev, 'nump3')
+                    elif para.style.name in styles['nump 3']:
+                        node = ET.SubElement(prev, 'levelledPara')
                         node.text = para.text
                         numpstart = node
                         continue
                     else:
                         numpstart = prev
 
-                    if para.style.name == styles['iter 1']:
+                    if para.style.name in styles['iter 1']:
                         if not in_iter:
                             in_iter = True
-                            iter_start = ET.SubElement(prev, 'iter')
-                        node = ET.SubElement(iter_start, 'i1')
+                            iter_start = ET.SubElement(prev, 'sequentialList')
+                        node = ET.SubElement(iter_start, 'listItem')
                         node.text = para.text
                         iter1_start = node
                         continue
 
-                    if para.style.name == styles['iter 2']:
-                        node = ET.SubElement(iter1_start, 'i2')
+                    if para.style.name in styles['iter 2']:
+                        node = ET.SubElement(iter1_start, 'listItem')
                         node.text = para.text
                         continue
 
-                    if para.style.name == styles['iter alt']:
+                    if para.style.name in styles['iter alt']:
                         if not in_iter:
                             in_iter = True
-                            iter_start = ET.SubElement(prev, 'iter alt')
-                        if iter_start.tag == 'iter alt':
-                            node = ET.SubElement(iter_start, 'i1')
+                            iter_start = ET.SubElement(prev, 'sequentialList')
+                        if iter_start.tag in 'iter alt':
+                            node = ET.SubElement(iter_start, 'listItem')
                         else:
-                            node = ET.SubElement(iter1_start, 'i2')
+                            node = ET.SubElement(iter1_start, 'listItem')
                         node.text = para.text
                         continue
 
                     in_iter = False
 
-                    if para.style.name == styles['normal']:
-                        node = ET.SubElement(numpstart, 'n')
+                    if para.style.name in styles['normal']:
+                        node = ET.SubElement(numpstart, 'para')
                         node.text = para.text
                         continue
 
@@ -193,52 +193,22 @@ def parse_em_all(doc):
                 break
             doc_index += 1
         prev = elem
-    # doc_index = 0
-    # while doc_index < len(doc.paragraphs):
-    #     if prev.get('name') in doc.paragraphs[doc_index].text and doc.paragraphs[doc_index].style.name not in tocs:
-    #         s_name = doc.paragraphs[doc_index].style.name
-    #         doc_index += 1
-    #         for i in range(doc_index, len(doc.paragraphs)):
-    #             para = doc.paragraphs[i]
-    #             print(para.style.name)
-    #
-    #             if para.style.name == s_name:
-    #                 doc_index = i
-    #                 break
-    #             if para.style.name == styles['iter 1']:
-    #                 node = ET.SubElement(prev, 'i1')
-    #                 node.text = para.text
-    #                 iter_start = node
-    #
-    #             elif para.style.name == styles['iter 1 alt']:
-    #                 node = ET.SubElement(prev, 'i1alt')
-    #                 node.text = para.text
-    #                 iter_start = node
-    #
-    #             elif para.style.name == styles['iter 2']:
-    #                 node = ET.SubElement(iter_start, 'i2')
-    #                 node.text = para.text
-    #
-    #             else:
-    #                 node = ET.SubElement(prev, 'p')
-    #                 node.text = para.text
-    #         break
-    #     doc_index += 1
+
     return root
 
 styles = {
-    'content_description': 'Название-caps',  # Содержание
-    'toc 1': 'toc 1',
-    'toc 2': 'toc 2',
-    'toc 3': 'toc 3',  # Перечисления в содержании (индексация длины 1, 2 и 3 соответственно)
-    'subsec v': 'Нумерованный заголовок 3',
-    'iter 1': "Перечисление-1",
-    'iter 2': "Перечисление 2 уровень",
-    'iter alt': "Перечень",
-    'nump 2': "Нумерованный абзац 2",
-    'nump 3': "Нумерованный абзац 3",
-    'normal': "Normal",
-    'extra': "Приложение",
+    'content_description': ['Название-caps'],  # Содержание
+    'toc 1': ['toc 1'],
+    'toc 2': ['toc 2'],
+    'toc 3': ['toc 3'],  # Перечисления в содержании (индексация длины 1, 2 и 3 соответственно)
+    'subsec v': ['Нумерованный заголовок 3'],
+    'iter 1': ["Перечисление-1"],
+    'iter 2': ["Перечисление 2 уровень"],
+    'iter alt': ["Перечень"],
+    'nump 2': ["Нумерованный абзац 2"],
+    'nump 3': ["Нумерованный абзац 3"],
+    'normal': ["Normal"],
+    'extra': ["Приложение"],
 }
 
 
