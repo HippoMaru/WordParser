@@ -139,12 +139,12 @@ def parse_em_all(doc):
                         break
 
                     if para.style.name in styles['nump 2']:
-                        node = ET.SubElement(prev, 'nump2')
+                        node = ET.SubElement(prev, 'levelledPara')
                         node.text = para.text
                         numpstart = node
                         continue
                     elif para.style.name in styles['nump 3']:
-                        node = ET.SubElement(prev, 'nump3')
+                        node = ET.SubElement(prev, 'levelledPara')
                         node.text = para.text
                         numpstart = node
                         continue
@@ -154,32 +154,32 @@ def parse_em_all(doc):
                     if para.style.name in styles['iter 1']:
                         if not in_iter:
                             in_iter = True
-                            iter_start = ET.SubElement(prev, 'iter')
-                        node = ET.SubElement(iter_start, 'i1')
+                            iter_start = ET.SubElement(prev, 'sequentialList')
+                        node = ET.SubElement(iter_start, 'listItem')
                         node.text = para.text
                         iter1_start = node
                         continue
 
                     if para.style.name in styles['iter 2']:
-                        node = ET.SubElement(iter1_start, 'i2')
+                        node = ET.SubElement(iter1_start, 'listItem')
                         node.text = para.text
                         continue
 
                     if para.style.name in styles['iter alt']:
                         if not in_iter:
                             in_iter = True
-                            iter_start = ET.SubElement(prev, 'iter alt')
+                            iter_start = ET.SubElement(prev, 'sequentialList')
                         if iter_start.tag in 'iter alt':
-                            node = ET.SubElement(iter_start, 'i1')
+                            node = ET.SubElement(iter_start, 'listItem')
                         else:
-                            node = ET.SubElement(iter1_start, 'i2')
+                            node = ET.SubElement(iter1_start, 'listItem')
                         node.text = para.text
                         continue
 
                     in_iter = False
 
                     if para.style.name in styles['normal']:
-                        node = ET.SubElement(numpstart, 'n')
+                        node = ET.SubElement(numpstart, 'para')
                         node.text = para.text
                         continue
 
