@@ -1,4 +1,4 @@
-import docx
+import docx 
 import lxml.etree as ET
 import copy
 
@@ -20,22 +20,31 @@ def extract_subtree_and_add_header(tree, section_name, dictionary):
   subtree_with_header = add_header_to_xml(subtree, module_code)
   return subtree_with_header
 
-def add_header_to_xml(tree, module_code):
-    # Создаём копию дерева, чтобы не изменять исходное
-    tree_copy = copy.deepcopy(tree) 
+def add_header_to_xml(content_tree):
+    # Создаем новый корневой элемент с атрибутами
+    root = ET.Element("dmodule", 
+                    attrib={"xmlns:rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+                            "xmlns:ns2": "http://www.purl.org/dc/elements/1.1/",
+                            "xmlns:xlink": "http://www.w3.org/1999/xlink",
+                            "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                            "xsi:noNamespaceSchemaLocation": "http://www.s1000d.org/S1000D_4-1/xml_schema_flat/descript.xsd"}
+                    )
 
-    # Создаем элемент заголовка
-    header = ET.Element("Header")
+    # Получаем элементы вне тега content
+    header_elements = [elem for elem in content_tree.getroot().iter() if elem.tag != "content"]
 
-    # Добавляем информацию о модуле
-    module_info = ET.SubElement(header, "ModuleInfo")
-    module_code_element = ET.SubElement(module_info, "ModuleCode")
-    module_code_element.text = module_code
+    # Добавляем элементы хэдера в новый корневой элемент
+    for elem in header_elements:
+        root.append(elem)
 
-    # Вставляем заголовок в начало копии дерева (section)
-    tree_copy.insert(0, header)
-    
-    return tree_copy
+    # Добавляем тег content в новый корневой элемент
+    root.append(content_tree.find(".//content"))
+
+    # Создаем новое дерево с новым корнем
+    new_tree = ET.ElementTree(root)
+
+    # Возвращаем новое дерево с добавленным хэдером
+    return new_tree
 
 
 class Node:
@@ -291,3 +300,4 @@ def run_parser(doc):
 
 doc = docx.Document("input.docx")
 run_parser(doc)
+ # type: ignore
