@@ -14,7 +14,7 @@ class Node:
 
 def parse_content_description_to_tree(doc):
 
-    tocs = (styles['toc 1'], styles['toc 2'], styles['toc 3'],)
+    tocs = styles['toc 1'] + styles['toc 2'] + styles['toc 3']
 
 
     root = Node(0, 'main', 'ROOT')
@@ -23,13 +23,12 @@ def parse_content_description_to_tree(doc):
     in_content_description = False
     for i in range(len(doc.paragraphs)):
         para = doc.paragraphs[i]
-
+        print(para.style.name)
         if in_content_description:
             s_name = para.style.name
 
             if s_name not in tocs:
                 return root
-
             if s_name in styles['toc 1']:
                 node = Node(first_level_id, 'sec', ' '.join(para.text.split()[:-1]), root)
                 root.children.append(node)
@@ -51,7 +50,7 @@ def parse_content_description_to_tree(doc):
 
 def parse_content_description_to_etree(doc):
 
-    tocs = (styles['toc 1'], styles['toc 2'], styles['toc 3'],)
+    tocs = styles['toc 1'] + styles['toc 2'] + styles['toc 3']
 
 
     root = ET.Element('content_description')
@@ -61,7 +60,7 @@ def parse_content_description_to_etree(doc):
     in_content_description = False
     for i in range(len(doc.paragraphs)):
         para = doc.paragraphs[i]
-
+        print(para.style.name)
         if in_content_description:
             s_name = para.style.name
 
@@ -102,7 +101,7 @@ def parse_em_all(doc):
     root = parse_content_description_to_etree(doc)
     prev = root
 
-    tocs = (styles['toc 1'], styles['toc 2'], styles['toc 3'],)
+    tocs = styles['toc 1'] + styles['toc 2'] + styles['toc 3']
 
     levels = {
         'sec': 1,
@@ -115,7 +114,6 @@ def parse_em_all(doc):
     for elem in root.iter():
         if elem == root:
             continue
-
         if prev == root or levels[prev.tag] < levels[elem.tag]:
             prev = elem
             continue
@@ -183,7 +181,7 @@ def parse_em_all(doc):
                         node.text = para.text
                         continue
 
-                    if styles['extra'] in para.style.name:
+                    if styles['extra'][0] in para.style.name:
                         node = ET.SubElement(prev, 'extra')
                         node.text = para.text
                         numpstart = node
@@ -209,6 +207,18 @@ styles = {
     'nump 3': ["Нумерованный абзац 3"],
     'normal': ["Normal"],
     'extra': ["Приложение"],
+}
+
+module_codees = {
+    "DMC-VBMA-A-46-20-01-00A-018A-A_000_01_ru_RU.xml": "Введение",
+    "DMC-VBMA-A-46-20-01-00A-020A-A_000_01_ru_RU.xml": "Назначение",
+    "DMC-VBMA-A-46-20-01-00A-030A-A_000_01_ru_RU.xml": "Технические характеристики",
+    "DMC-VBMA-A-46-20-01-00A-034A-A_000_01_ru_RU.xml": "Состав изделия",
+    "DMC-VBMA-A-46-20-01-00A-041A-A_000_01_ru_RU.xml": "Устройство и работа",
+    "DMC-VBMA-A-46-20-01-00A-044A-A_000_01_ru_RU.xml": "Описание и работа составных частей изделия",
+    "DMC-VBMA-A-46-20-01-00A-122A-A_000_01_ru_RU.xml": "Указания по включению и опробованию работы изделия",
+    "DMC-VBMA-A-46-20-01-00A-123A-A_000_01_ru_RU.xml": "Установка и настройка программного обеспечения",
+    "DMC-VBMA-A-46-20-01-00A-410A-A_000_01_ru_RU.xml": "Перечень возможных неисправностей в процессе использования изделия и рекомендации по действиям при их возникновении",
 }
 
 
