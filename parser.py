@@ -2,50 +2,6 @@ import docx
 import lxml.etree as ET
 import copy
 
-def extract_subtree_and_add_header(tree, section_name, dictionary):
-  # Поиск элемента с заданным именем раздела
-  section_element = tree.find(f".//*[@Name='{section_name}']")
-  if not section_element:
-    return None  # Раздел не найден
-
-  # Выделение поддерева
-  subtree = copy.deepcopy(section_element)
-
-  # Получение кода модуля из словаря
-  module_code = dictionary.get(section_name) 
-  if not module_code:
-    return None  # Код модуля не найден
-
-  # Добавление заголовка к поддереву
-  subtree_with_header = add_header_to_xml(subtree, module_code)
-  return subtree_with_header
-
-def add_header_to_xml(content_tree):
-    # Создаем новый корневой элемент с атрибутами
-    root = ET.Element("dmodule", 
-                    attrib={"xmlns:rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-                            "xmlns:ns2": "http://www.purl.org/dc/elements/1.1/",
-                            "xmlns:xlink": "http://www.w3.org/1999/xlink",
-                            "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
-                            "xsi:noNamespaceSchemaLocation": "http://www.s1000d.org/S1000D_4-1/xml_schema_flat/descript.xsd"}
-                    )
-
-    # Получаем элементы вне тега content
-    header_elements = [elem for elem in content_tree.getroot().iter() if elem.tag != "content"]
-
-    # Добавляем элементы хэдера в новый корневой элемент
-    for elem in header_elements:
-        root.append(elem)
-
-    # Добавляем тег content в новый корневой элемент
-    root.append(content_tree.find(".//content"))
-
-    # Создаем новое дерево с новым корнем
-    new_tree = ET.ElementTree(root)
-
-    # Возвращаем новое дерево с добавленным хэдером
-    return new_tree
-
 
 class Node:
     def __init__(self, id, tag, name, parent=None, value=None):
@@ -296,8 +252,109 @@ def run_parser(doc):
     root = parse_content_description_to_etree(doc)
     et = ET.ElementTree(root)
     et.write('output2.xml', encoding="utf-8", pretty_print=True)
+    doc = docx.Document("input.docx")
+    run_parser(doc)
 
+######################################
+##           TEST DRIVE             ##
+######################################
 
-doc = docx.Document("input.docx")
-run_parser(doc)
+def add_headers_to_content(content_xml_string):
+# Парсим content_xml_string в дерево элементов
+    content_tree = ET.fromstring(content_xml_string)
+    nsmap = {
+        "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+        "ns2": "http://www.purl.org/dc/elements/1.1/",
+        "xlink": "http://www.w3.org/1999/xlink",
+        "xsi": "http://www.w3.org/2001/XMLSchema-instance"
+    }
+
+    # Create root element with nsmap
+    dmodule = ET.Element("dmodule")
+    #dmodule.set("xmlns:rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#")
+    dmodule.set("{{{}}}noNames".format(nsmap["rdf"]), 
+                "http://www.w3.org/1999/02/22-rdf-syntax-ns#") 
+    
+    dmodule.set("{{{}}}noNames".format(nsmap["ns2"]), 
+                "http://www.purl.org/dc/elements/1.1/") 
+    
+    dmodule.set("{{{}}}noNames".format(nsmap["xlink"]), 
+                "http://www.w3.org/1999/xlink") 
+    
+    dmodule.set("{{{}}}noNames".format(nsmap["xsi"]), 
+               "http://www.w3.org/2001/XMLSchema-instance") 
+    
+    dmodule.set("{{{}}}noNamespaceSchemaLocation".format(nsmap["xsi"]), 
+               "http://www.s1000d.org/S1000D_4-1/xml_schema_flat/descript.xsd") 
+
+    # Создаем элемент identAndStatusSection и его дочерние элементы
+    ident_and_status_section = ET.SubElement(dmodule, "identAndStatusSection")
+    dm_address = ET.SubElement(ident_and_status_section, "dmAddress")
+    dm_ident = ET.SubElement(dm_address, "dmIdent")
+    dm_code = ET.SubElement(dm_ident, "dmCode")
+    dm_code.set("assyCode", "01") 
+    dm_code.set("disassyCode", "00")
+    dm_code.set("disassyCodeVariant", "A")
+    dm_code.set("infoCode", "041")
+    dm_code.set("infoCodeVariant", "A")
+    dm_code.set("itemLocationCode", "A") 
+    dm_code.set("modelIdentCode", "VBMA")
+    dm_code.set("subSubSystemCode", "0")
+    dm_code.set("subSystemCode", "2")
+    dm_code.set("systemCode", "46")
+    dm_code.set("systemDiffCode", "A")
+    language = ET.SubElement(dm_ident, "language")
+    language.set("countryIsoCode", "RU")
+    language.set("languageIsoCode", "ru")
+    issue_info = ET.SubElement(dm_ident, "issueInfo")
+    issue_info.set("inWork", "01")
+    issue_info.set("issueNumber", "000")
+    dm_address_items = ET.SubElement(dm_address, "dmAddressItems")
+    issue_date = ET.SubElement(dm_address_items, "issueDate")
+    issue_date.set("day", "666")
+    issue_date.set("month", "777")
+    issue_date.set("year", "228")
+    dm_title = ET.SubElement(dm_address_items, "dmTitle")
+    tech_name = ET.SubElement(dm_title, "techName")
+    tech_name.text = "Можно написать функцию, чтобы тут был другой текст"
+    info_name = ET.SubElement(dm_title, "infoName")
+    info_name.text = "Можно написать функцию, чтобы тут был другой текст"
+    dm_status = ET.SubElement(ident_and_status_section, "dmStatus")
+    security = ET.SubElement(dm_status, "security")
+    responsible_partner_company = ET.SubElement(dm_status, "responsiblePartnerCompany")
+    responsible_partner_company.set("enterpriseCode", "00000")
+    originator = ET.SubElement(dm_status, "originator")
+    originator.set("enterpriseCode", "00000")
+
+  # Добавляем content в dmodule
+    content = ET.SubElement(dmodule, "content") 
+  
+  # Переносим дочерние элементы из content_tree в content
+    for child in content_tree:
+        content.append(child)
+
+  # Создаем дерево из dmodule и преобразуем его в XML-строку
+    tree = ET.ElementTree(dmodule)
+    return ET.tostring(tree.getroot(), encoding='unicode')
+
+example = """
+<content>
+  <description>
+    <para>Один мой панч, и весь твой баттл-рэп на сраку присел
+    Мне нужен только демон: Люцифер, Сатана, Бафомет
+    Я люблю лишь твою маму, алкоголь и баттл-рэп!</para>
+  </description>
+</content>
+"""
+result_xml_string = add_headers_to_content(example)
+print(result_xml_string)
+with open(r"C:\Users\danii\Desktop\result.xml", "w", encoding="utf-8") as f:
+  f.write(result_xml_string)
+# doc = docx.Document("input.docx")
+# run_parser(doc)
  # type: ignore
+
+
+
+
+
