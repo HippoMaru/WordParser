@@ -271,7 +271,7 @@ def run_parser(doc):
 
 def add_headers_to_content(content_xml_string):
 # Парсим content_xml_string в дерево элементов
-    content_tree = ET.fromstring(content_xml_string)
+    content_tree = ET.fromstring(content_xml_string) 
     nsmap = {
         "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
         "ns2": "http://www.purl.org/dc/elements/1.1/",
@@ -337,28 +337,35 @@ def add_headers_to_content(content_xml_string):
     originator.set("enterpriseCode", "00000")
 
   # Добавляем content в dmodule
-    content = ET.SubElement(dmodule, "content") 
+    content = ET.SubElement(dmodule, "content")
+
+
   
   # Переносим дочерние элементы из content_tree в content
+    
     for child in content_tree:
         content.append(child)
-
+    
   # Создаем дерево из dmodule и преобразуем его в XML-строку
     tree = ET.ElementTree(dmodule)
     return ET.tostring(tree.getroot(), encoding='unicode')
 
-example = """
-<content>
-  <description>
-    <para>Один мой панч, и весь твой баттл-рэп на сраку присел
-    Мне нужен только демон: Люцифер, Сатана, Бафомет
-    Я люблю лишь твою маму, алкоголь и баттл-рэп!</para>
-  </description>
-</content>
-"""
+# example = """
+# <content>
+#   <description>
+#     <para>Один мой панч, и весь твой баттл-рэп на сраку присел
+#     Мне нужен только демон: Люцифер, Сатана, Бафомет
+#     Я люблю лишь твою маму, алкоголь и баттл-рэп!</para>
+#   </description>
+# </content>
+# """
+with open("/home/user/Desktop/test.xml", "rb") as file:
+    example = file.read()
+    
+
 result_xml_string = add_headers_to_content(example)
 print(result_xml_string)
-with open(r"C:\Users\danii\Desktop\result.xml", "w", encoding="utf-8") as f:
+with open(r"/home/user/Desktop/result.xml", "w", encoding="utf-8") as f:
   f.write(result_xml_string)
 
 def extract_section_with_headers(doc, section_name:str):
