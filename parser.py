@@ -241,7 +241,17 @@ styles = {
     'normal': "Normal",
     'extra': "Приложение",
 }
-
+module_codees = {
+    "DMC-VBMA-A-46-20-01-00A-018A-A_000_01_ru_RU.xml": "Введение",
+    "DMC-VBMA-A-46-20-01-00A-020A-A_000_01_ru_RU.xml": "Назначение",
+    "DMC-VBMA-A-46-20-01-00A-030A-A_000_01_ru_RU.xml": "Технические характеристики",
+    "DMC-VBMA-A-46-20-01-00A-034A-A_000_01_ru_RU.xml": "Состав изделия",
+    "DMC-VBMA-A-46-20-01-00A-041A-A_000_01_ru_RU.xml": "Устройство и работа",
+    "DMC-VBMA-A-46-20-01-00A-044A-A_000_01_ru_RU.xml": "Описание и работа составных частей изделия",
+    "DMC-VBMA-A-46-20-01-00A-122A-A_000_01_ru_RU.xml": "Указания по включению и опробованию работы изделия",
+    "DMC-VBMA-A-46-20-01-00A-123A-A_000_01_ru_RU.xml": "Установка и настройка программного обеспечения",
+    "DMC-VBMA-A-46-20-01-00A-410A-A_000_01_ru_RU.xml": "Перечень возможных неисправностей в процессе использования изделия и рекомендации по действиям при их возникновении",
+}
 
 def run_parser(doc):
     root = parse_em_all(doc)
@@ -350,9 +360,44 @@ result_xml_string = add_headers_to_content(example)
 print(result_xml_string)
 with open(r"C:\Users\danii\Desktop\result.xml", "w", encoding="utf-8") as f:
   f.write(result_xml_string)
+
+def extract_section_with_headers(doc, section_name:str):
+    # Поиск DMC
+    dmc_filename = None
+    for filename, name in module_codees.items():
+        if name == section_name:
+            dmc_filename = filename
+            break
+
+    if not dmc_filename:
+        raise ValueError("Неверное название раздела")
+
+    # Поиск dataModule по dmCode
+    data_module_element = doc.find(
+        ".//dataModule[dmIdent/dmCode[@modelIdentCode='VBMA']"
+        " and dmIdent/dmCode[@infoCode='{}']]".format(dmc_filename.split("-")[4])
+    )
+
+    if not data_module_element:
+        raise ValueError("Не найдены данные для: {}".format(section_name))
+
+    # Берем content
+    content_element = data_module_element.find(".//content")
+    if not content_element:
+        raise ValueError("Content element not found within data module")
+
+    # Новое дерево только с контентом
+    content_tree = ET.ElementTree(content_element)
+
+    # Конвертер в стрку и добавление хедера
+    content_xml_string = ET.tostring(content_tree.getroot(), encoding='unicode')
+    result_xml_string = add_headers_to_content(content_xml_string)  
+
+    return result_xml_string
 # doc = docx.Document("input.docx")
 # run_parser(doc)
  # type: ignore
+
 
 
 
