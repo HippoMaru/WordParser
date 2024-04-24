@@ -253,17 +253,17 @@ module_codees = {
     "DMC-VBMA-A-46-20-01-00A-410A-A_000_01_ru_RU.xml": "Перечень возможных неисправностей в процессе использования изделия и рекомендации по действиям при их возникновении",
 }
 
-def run_parser(doc):
-    root = parse_em_all(doc)
+# def run_parser(doc):
+#     root = parse_em_all(doc)
 
-    et = ET.ElementTree(root)
-    et.write('output.xml', encoding="utf-8", pretty_print=True)
+#     et = ET.ElementTree(root)
+#     et.write('output.xml', encoding="utf-8", pretty_print=True)
 
-    root = parse_content_description_to_etree(doc)
-    et = ET.ElementTree(root)
-    et.write('output2.xml', encoding="utf-8", pretty_print=True)
-    doc = docx.Document("input.docx")
-    run_parser(doc)
+#     root = parse_content_description_to_etree(doc)
+#     et = ET.ElementTree(root)
+#     et.write('output2.xml', encoding="utf-8", pretty_print=True)
+#     doc = docx.Document("input.docx")
+    
 
 ######################################
 ##           TEST DRIVE             ##
@@ -350,59 +350,48 @@ def add_headers_to_content(content_xml_string):
     tree = ET.ElementTree(dmodule)
     return ET.tostring(tree.getroot(), encoding='unicode')
 
-# example = """
-# <content>
-#   <description>
-#     <para>Один мой панч, и весь твой баттл-рэп на сраку присел
-#     Мне нужен только демон: Люцифер, Сатана, Бафомет
-#     Я люблю лишь твою маму, алкоголь и баттл-рэп!</para>
-#   </description>
-# </content>
-# """
-with open("/home/user/Desktop/test.xml", "rb") as file:
-    example = file.read()
-    
 
-result_xml_string = add_headers_to_content(example)
-print(result_xml_string)
-with open(r"/home/user/Desktop/result.xml", "w", encoding="utf-8") as f:
-  f.write(result_xml_string)
+# with open("/home/user/Desktop/test.xml", "rb") as file:
+#     example = file.read()
+# result_xml_string = add_headers_to_content(example, "Устройство и работа")
+# print(result_xml_string)
+# with open(r"/home/user/Desktop/result.xml", "w", encoding="utf-8") as f:
+#   f.write(result_xml_string)
 
 def extract_section_with_headers(doc, section_name:str):
-    # Поиск DMC
-    dmc_filename = None
-    for filename, name in module_codees.items():
-        if name == section_name:
-            dmc_filename = filename
-            break
+    # Поиск subseca по сусекам
+    
+    subsec_element = doc.find(f".//*[@subsec2='{section_name}']")
 
-    if not dmc_filename:
-        raise ValueError("Неверное название раздела")
+    if not subsec_element:
+        raise ValueError("Subsec element not found for section: {}".format(section_name))
 
-    # Поиск dataModule по dmCode
-    data_module_element = doc.find(
-        ".//dataModule[dmIdent/dmCode[@modelIdentCode='VBMA']"
-        " and dmIdent/dmCode[@infoCode='{}']]".format(dmc_filename.split("-")[4])
-    )
 
-    if not data_module_element:
-        raise ValueError("Не найдены данные для: {}".format(section_name))
+    # Конент 
+    content_element = ET.Element("content")
+    content_element.append(subsec_element)
 
-    # Берем content
-    content_element = data_module_element.find(".//content")
-    if not content_element:
-        raise ValueError("Content element not found within data module")
-
-    # Новое дерево только с контентом
+    # новое дерево с контентом
     content_tree = ET.ElementTree(content_element)
 
-    # Конвертер в стрку и добавление хедера
+    # бл а
     content_xml_string = ET.tostring(content_tree.getroot(), encoding='unicode')
-    result_xml_string = add_headers_to_content(content_xml_string)  
+    result_string = add_headers_to_content(content_xml_string)
 
-    return result_xml_string
-# doc = docx.Document("input.docx")
-# run_parser(doc)
+    return result_string
+
+
+def run_parser(doc):
+    with open("output.xml", "rb") as file:
+        example = file.read()
+
+    result_xml_string = extract_section_with_headers(example, "Технические характеристики")
+    result_xml_string.write('asshole.xml', encoding="utf-8", pretty_print=True)
+
+
+doc = docx.Document("input.docx")
+run_parser(doc)
+
  # type: ignore
 
 
