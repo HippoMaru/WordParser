@@ -360,8 +360,7 @@ def add_headers_to_content(content_xml_string):
 
 def extract_section_with_headers(doc, section_name:str):
     # Поиск subseca по сусекам
-    
-    subsec_element = doc.find(f".//*[@subsec2='{section_name}']")
+    subsec_element = doc.find(".//subsec2[@name='{}']".format(section_name))
 
     if not subsec_element:
         raise ValueError("Subsec element not found for section: {}".format(section_name))
